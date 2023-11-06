@@ -130,6 +130,43 @@ async function run() {
       const result = await bookCollection.updateOne(filter, book, options);
       res.send(result);
     });
+
+    // BORROWED BOOKS IN DB
+    const borrowedBooksCollection = client
+      .db("bookByteLibraryDB")
+      .collection("borrowedBooks");
+
+    app.get("/borrowedBooks", async (req, res) => {
+      const cursor = borrowedBooksCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // GET SOME DATA (CONDITIONAL) USING QUERY
+    // app.get("/borrowedBooks", async (req, res) => {
+    //   // console.log(req.query.email);
+    //   // console.log("Token From Client Side:", req.cookies.accessToken);
+    //   console.log("USER In The Valid Token: ", req.user);
+
+    //   if (req.query.email !== req.user.email) {
+    //     return res.status(403).send({ message: "Forbidden!" });
+    //   }
+
+    //   let query = {};
+
+    //   if (req.query?.email) {
+    //     query = { email: req.query.email };
+    //   }
+    //   const result = await buyerCollection.find(query).toArray();
+    //   res.send(result);
+    // });
+
+    app.post("/borrowedBooks", async (req, res) => {
+      const borrowedBook = req.body;
+      console.log(borrowedBook);
+      const result = await borrowedBooksCollection.insertOne(borrowedBook);
+      res.send(result);
+    });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
