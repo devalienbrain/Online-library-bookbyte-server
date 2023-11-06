@@ -11,6 +11,16 @@ app.listen(port, () => {
   console.log(`SERVER running on port: ${port}`);
 });
 
+// MIDDLEWARE
+//To Send Token From Server Cross Origin Setup In Cors Middleware
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+  })
+);
+app.use(express.json());
+
 // MongoDB Starts Here
 
 require("dotenv").config();
@@ -39,14 +49,37 @@ async function run() {
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
 
-    // PRODUCTS API
+    // BOOKS API TO LOAD ALL BOOKS
     const bookCollection = client
       .db("bookByteLibraryDB")
       .collection("allBooks");
+    // app.get("/allBooks", async (req, res) => {
+    //   const cursor = bookCollection.find();
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
+
+    // ALL BOOKS API FOR PAGINATION
     app.get("/allBooks", async (req, res) => {
-      const cursor = bookCollection.find();
+      const books = req.query;
+      // console.log("Pagination Products:", products);
+      // GET currentPage And itemsPerPage From Client Side
+      const page = parseInt(books.page);
+      const size = parseInt(books.size);
+
+      const cursor = bookCollection
+        .find()
+        .skip(page * size) //SET HOW MANY WILL SKIP
+        .limit(size); //SET HOW MANY WILL RENDER IN A PAGE
       const result = await cursor.toArray();
       res.send(result);
+    });
+
+    // TOTAL BOOKS COUNT
+    app.get("/booksCount", async (req, res) => {
+      const count = await bookCollection.estimatedDocumentCount();
+      console.log("Total Books= ", count);
+      res.send({ count });
     });
   } finally {
     // Ensures that the client will close when you finish/error
