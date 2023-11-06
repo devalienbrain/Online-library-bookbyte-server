@@ -92,6 +92,14 @@ async function run() {
       console.log("Total Books= ", count);
       res.send({ count });
     });
+
+    // API TO ADD A NEW BOOK
+    app.post("/allBooks", async (req, res) => {
+      const newBook = req.body;
+      console.log(newBook);
+      const result = await bookCollection.insertOne(newBook);
+      res.send(result);
+    });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
