@@ -49,6 +49,17 @@ async function run() {
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
 
+    // BOOK CATEGORIES API
+    const bookCategoriesCollection = client
+      .db("bookByteLibraryDB")
+      .collection("bookCategories");
+
+    app.get("/bookCategories", async (req, res) => {
+      const cursor = bookCategoriesCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // BOOKS API TO LOAD ALL BOOKS
     const bookCollection = client
       .db("bookByteLibraryDB")
