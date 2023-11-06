@@ -25,7 +25,7 @@ app.use(express.json());
 
 require("dotenv").config();
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 console.log(process.env.DB_USER, process.env.DB_PASS);
 
@@ -98,6 +98,36 @@ async function run() {
       const newBook = req.body;
       console.log(newBook);
       const result = await bookCollection.insertOne(newBook);
+      res.send(result);
+    });
+
+    // API TO UPDATE A PRODUCT
+
+    app.get("/allBooks/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.put("/allBooks/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedBook = req.body;
+      const book = {
+        $set: {
+          image: updatedBook.image,
+          name: updatedBook.name,
+          category: updatedBook.category,
+          author: updatedBook.author,
+          quantity: updatedBook.quantity,
+          description: updatedBook.description,
+          ratings: updatedBook.ratings,
+        },
+      };
+
+      const result = await bookCollection.updateOne(filter, book, options);
       res.send(result);
     });
   } finally {
