@@ -136,30 +136,30 @@ async function run() {
       .db("bookByteLibraryDB")
       .collection("borrowedBooks");
 
-    app.get("/borrowedBooks", async (req, res) => {
-      const cursor = borrowedBooksCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
-    });
-
-    // GET SOME DATA (CONDITIONAL) USING QUERY
     // app.get("/borrowedBooks", async (req, res) => {
-    //   // console.log(req.query.email);
-    //   // console.log("Token From Client Side:", req.cookies.accessToken);
-    //   console.log("USER In The Valid Token: ", req.user);
-
-    //   if (req.query.email !== req.user.email) {
-    //     return res.status(403).send({ message: "Forbidden!" });
-    //   }
-
-    //   let query = {};
-
-    //   if (req.query?.email) {
-    //     query = { email: req.query.email };
-    //   }
-    //   const result = await buyerCollection.find(query).toArray();
+    //   const cursor = borrowedBooksCollection.find();
+    //   const result = await cursor.toArray();
     //   res.send(result);
     // });
+
+    // GET SOME DATA (CONDITIONAL) USING QUERY
+    app.get("/borrowedBooks", async (req, res) => {
+      console.log(req.query.email);
+      // console.log("Token From Client Side:", req.cookies.accessToken);
+      // console.log("USER In The Valid Token: ", req.user);
+
+      // if (req.query.email !== req.user.email) {
+      //   return res.status(403).send({ message: "Forbidden!" });
+      // }
+
+      let query = {};
+
+      if (req.query?.email) {
+        query = { userEmail: req.query.email };
+      }
+      const result = await borrowedBooksCollection.find(query).toArray();
+      res.send(result);
+    });
 
     app.post("/borrowedBooks", async (req, res) => {
       const borrowedBook = req.body;
