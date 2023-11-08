@@ -20,35 +20,35 @@ app.use(cookieParser());
 
 // CUSTOM MIDDLEWARE
 
-const verifyToken = async (req, res, next) => {
-  const token = req.cookies?.accessToken;
-  console.log("Token In Verify Middleware: ", token);
-  if (!token) {
-    return res.status(401).send({ message: "Not Authorized!" });
-  }
-  // JWT BuiltIn To Verify Token
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    // ERROR
-    if (err) {
-      console.log(err);
-      return res.status(401).send({ message: "Unauthorized Access!" });
-    }
-    // Decoded if Token is Valid
-    console.log(" Decoded Valid Token: ", decoded);
-    req.user = decoded;
-    next();
-  });
-};
+// const verifyToken = async (req, res, next) => {
+//   const token = req.cookies?.accessToken;
+//   console.log("Token In Verify Middleware: ", token);
+//   if (!token) {
+//     return res.status(401).send({ message: "Not Authorized!" });
+//   }
+//   // JWT BuiltIn To Verify Token
+//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+//     // ERROR
+//     if (err) {
+//       console.log(err);
+//       return res.status(401).send({ message: "Unauthorized Access!" });
+//     }
+//     // Decoded if Token is Valid
+//     console.log(" Decoded Valid Token: ", decoded);
+//     req.user = decoded;
+//     next();
+//   });
+// };
 
 // MIDDLEWARE
 //To Send Token From Server Cross Origin Setup In Cors Middleware
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      // "https://library-management-crud-jwt.web.app",
-      // "https://library-management-crud-jwt.firebaseapp.com",
+      // "http://localhost:5173",
+      // "http://localhost:5174",
+      "https://library-management-crud-jwt.web.app",
+      "https://library-management-crud-jwt.firebaseapp.com",
     ],
     credentials: true,
   })
