@@ -46,8 +46,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://library-management-crud-jwt.web.app",
-      "https://library-management-crud-jwt.firebaseapp.com",
+      "http://localhost:5174",
+      // "https://library-management-crud-jwt.web.app",
+      // "https://library-management-crud-jwt.firebaseapp.com",
     ],
     credentials: true,
   })
@@ -81,31 +82,31 @@ async function run() {
     );
 
     // Creating token (auth related api) in backend
-    app.post("/jwt", async (req, res) => {
-      const user = req.body;
-      console.log(user);
-      // res.send(user);
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1h",
-      });
-      // res.send(token);
+    // app.post("/jwt", async (req, res) => {
+    //   const user = req.body;
+    //   console.log(user);
+    //   // res.send(user);
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    //     expiresIn: "1h",
+    //   });
+    //   // res.send(token);
 
-      //  Set cookies with http only
-      res
-        .cookie("accessToken", token, {
-          httpOnly: true,
-          secure: false,
-          // sameSite: "none",
-        })
-        .send({ success: true });
-    });
+    //   //  Set cookies with http only
+    //   res
+    //     .cookie("accessToken", token, {
+    //       httpOnly: true,
+    //       secure: false,
+    //       // sameSite: "none",
+    //     })
+    //     .send({ success: true });
+    // });
 
     //CLEAR COOKIES AFTER LOGGED OUT A USER
-    app.post("/logout", async (req, res) => {
-      const user = req.body;
-      console.log("Logging Out: ", user);
-      res.clearCookie("accessToken", { maxAge: 0 }).send({ success: true });
-    });
+    // app.post("/logout", async (req, res) => {
+    //   const user = req.body;
+    //   console.log("Logging Out: ", user);
+    //   res.clearCookie("accessToken", { maxAge: 0 }).send({ success: true });
+    // });
 
     // BOOK CATEGORIES API
     const bookCategoriesCollection = client
@@ -151,14 +152,14 @@ async function run() {
 
     // API TO ADD A NEW BOOK
     // JWT FOR ADD BOOK
-    app.post("/allBooks", verifyToken, async (req, res) => {
-      console.log(req.query.email);
-      console.log("Token From Client Side:", req.cookies.accessToken);
-      console.log("USER In The Valid Token: ", req.user);
+    app.post("/allBooks", async (req, res) => {
+      // console.log(req.query.email);
+      // console.log("Token From Client Side:", req.cookies.accessToken);
+      // console.log("USER In The Valid Token: ", req.user);
 
-      if (req.query.email !== req.user.email) {
-        return res.status(403).send({ message: "Forbidden!" });
-      }
+      // if (req.query.email !== req.user.email) {
+      //   return res.status(403).send({ message: "Forbidden!" });
+      // }
 
       const newBook = req.body;
       console.log(newBook);
@@ -196,19 +197,19 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/allBooks/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updatedQuantity = req.body;
-      console.log(updatedQuantity);
-      const updateDoc = {
-        $set: {
-          quantity: updatedQuantity.quantity,
-        },
-      };
-      const result = await bookCollection.updateOne(filter, updateDoc);
-      res.send(result);
-    });
+    // app.patch("/allBooks/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id) };
+    //   const updatedQuantity = req.body;
+    //   console.log(updatedQuantity);
+    //   const updateDoc = {
+    //     $set: {
+    //       quantity: updatedQuantity.quantity,
+    //     },
+    //   };
+    //   const result = await bookCollection.updateOne(filter, updateDoc);
+    //   res.send(result);
+    // });
 
     // BORROWED BOOKS IN DB
     const borrowedBooksCollection = client
