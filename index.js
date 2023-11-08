@@ -11,6 +11,35 @@ app.listen(port, () => {
   console.log(`SERVER running on port: ${port}`);
 });
 
+// JSON WEB TOKEN
+const jwt = require("jsonwebtoken");
+
+// Cookie Parser
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
+// CUSTOM MIDDLEWARE
+
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.accessToken;
+  console.log("Token In Verify Middleware: ", token);
+  if (!token) {
+    return res.status(401).send({ message: "Not Authorized!" });
+  }
+  // JWT BuiltIn To Verify Token
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    // ERROR
+    if (err) {
+      console.log(err);
+      return res.status(401).send({ message: "Unauthorized Access!" });
+    }
+    // Decoded if Token is Valid
+    console.log(" Decoded Valid Token: ", decoded);
+    req.user = decoded;
+    next();
+  });
+};
+
 // MIDDLEWARE
 //To Send Token From Server Cross Origin Setup In Cors Middleware
 app.use(
@@ -31,7 +60,7 @@ require("dotenv").config();
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
-console.log(process.env.DB_USER, process.env.DB_PASS);
+// console.log(process.env.DB_USER, process.env.DB_PASS);
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.m38robg.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -45,13 +74,38 @@ const client = new MongoClient(uri, {
 });
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
+
+    // Creating token (auth related api) in backend
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      // res.send(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+      // res.send(token);
+
+      //  Set cookies with http only
+      res
+        .cookie("accessToken", token, {
+          httpOnly: true,
+          secure: false,
+          // sameSite: "none",
+        })
+        .send({ success: true });
+    });
+
+    //CLEAR COOKIES AFTER LOGGED OUT A USER
+    app.post("/logout", async (req, res) => {
+      const user = req.body;
+      console.log("Logging Out: ", user);
+      res.clearCookie("accessToken", { maxAge: 0 }).send({ success: true });
+    });
 
     // BOOK CATEGORIES API
     const bookCategoriesCollection = client
@@ -77,15 +131,13 @@ async function run() {
     // ALL BOOKS API FOR PAGINATION
     app.get("/allBooks", async (req, res) => {
       const books = req.query;
-      // console.log("Pagination Products:", products);
-      // GET currentPage And itemsPerPage From Client Side
       const page = parseInt(books.page);
       const size = parseInt(books.size);
 
       const cursor = bookCollection
         .find()
-        .skip(page * size) //SET HOW MANY WILL SKIP
-        .limit(size); //SET HOW MANY WILL RENDER IN A PAGE
+        .skip(page * size)
+        .limit(size);
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -98,7 +150,16 @@ async function run() {
     });
 
     // API TO ADD A NEW BOOK
-    app.post("/allBooks", async (req, res) => {
+    // JWT FOR ADD BOOK
+    app.post("/allBooks", verifyToken, async (req, res) => {
+      console.log(req.query.email);
+      console.log("Token From Client Side:", req.cookies.accessToken);
+      console.log("USER In The Valid Token: ", req.user);
+
+      if (req.query.email !== req.user.email) {
+        return res.status(403).send({ message: "Forbidden!" });
+      }
+
       const newBook = req.body;
       console.log(newBook);
       const result = await bookCollection.insertOne(newBook);
@@ -162,14 +223,6 @@ async function run() {
 
     // GET SOME DATA (CONDITIONAL) USING QUERY
     app.get("/borrowedBooks", async (req, res) => {
-      // console.log(req.query.email);
-      // console.log("Token From Client Side:", req.cookies.accessToken);
-      // console.log("USER In The Valid Token: ", req.user);
-
-      // if (req.query.email !== req.user.email) {
-      //   return res.status(403).send({ message: "Forbidden!" });
-      // }
-
       let query = {};
 
       if (req.query?.email) {
