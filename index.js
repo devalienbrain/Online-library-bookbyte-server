@@ -15,7 +15,11 @@ app.listen(port, () => {
 //To Send Token From Server Cross Origin Setup In Cors Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: [
+      "http://localhost:5173",
+      "https://library-management-crud-jwt.web.app",
+      "https://library-management-crud-jwt.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
@@ -131,6 +135,20 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/allBooks/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedQuantity = req.body;
+      console.log(updatedQuantity);
+      const updateDoc = {
+        $set: {
+          quantity: updatedQuantity.quantity,
+        },
+      };
+      const result = await bookCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     // BORROWED BOOKS IN DB
     const borrowedBooksCollection = client
       .db("bookByteLibraryDB")
@@ -144,7 +162,7 @@ async function run() {
 
     // GET SOME DATA (CONDITIONAL) USING QUERY
     app.get("/borrowedBooks", async (req, res) => {
-      console.log(req.query.email);
+      // console.log(req.query.email);
       // console.log("Token From Client Side:", req.cookies.accessToken);
       // console.log("USER In The Valid Token: ", req.user);
 
@@ -163,7 +181,7 @@ async function run() {
 
     app.post("/borrowedBooks", async (req, res) => {
       const borrowedBook = req.body;
-      console.log(borrowedBook);
+      // console.log(borrowedBook);
       const result = await borrowedBooksCollection.insertOne(borrowedBook);
       res.send(result);
     });
