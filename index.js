@@ -45,6 +45,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
+      // "http://localhost:5173",
       "https://library-management-crud-jwt.web.app",
       "https://library-management-crud-jwt.firebaseapp.com",
     ],
@@ -73,7 +74,7 @@ const client = new MongoClient(uri, {
 });
 async function run() {
   try {
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
@@ -194,19 +195,20 @@ async function run() {
       res.send(result);
     });
 
-    // app.patch("/allBooks/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const filter = { _id: new ObjectId(id) };
-    //   const updatedQuantity = req.body;
-    //   console.log(updatedQuantity);
-    //   const updateDoc = {
-    //     $set: {
-    //       quantity: updatedQuantity.quantity,
-    //     },
-    //   };
-    //   const result = await bookCollection.updateOne(filter, updateDoc);
-    //   res.send(result);
-    // });
+    // To Update Quantity
+    app.patch("/allBooks/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedQuantity = req.body;
+      console.log(updatedQuantity);
+      const updateDoc = {
+        $set: {
+          quantity: updatedQuantity.quantity,
+        },
+      };
+      const result = await bookCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
     // BORROWED BOOKS IN DB
     const borrowedBooksCollection = client
@@ -232,7 +234,7 @@ async function run() {
 
     app.post("/borrowedBooks", async (req, res) => {
       const borrowedBook = req.body;
-      // console.log(borrowedBook);
+      console.log(borrowedBook);
       const result = await borrowedBooksCollection.insertOne(borrowedBook);
       res.send(result);
     });
